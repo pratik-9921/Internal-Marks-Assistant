@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard | SNJB Internal Marks Assistant</title>
+  <meta name="description"
+    content="Student marks dashboard for T.Y. B.Tech Computer Engineering Semester V, SNJB COE Chandwad.">
+  <link rel="stylesheet" href="css/design.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="app-page">
+
+  <!-- ═══════════════════════════════════════════════════ SIDEBAR ═══ -->
+  <aside class="sidebar" id="appSidebar">
+    <button class="sidebar-close-btn" id="closeSidebar" aria-label="Close sidebar">✕</button>
+
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">S</div>
+      <div class="sidebar-wordmark">
+        snjb marks
+        <small>Sem V · AY 2026-27</small>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">General</div>
+
+      <a href="index.html" class="nav-item active" aria-current="page">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Dashboard
+      </a>
+
+      <a href="calculator.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <rect x="4" y="2" width="16" height="20" rx="2" />
+          <line x1="8" y1="6" x2="16" y2="6" />
+          <line x1="8" y1="10" x2="16" y2="10" />
+          <line x1="8" y1="14" x2="12" y2="14" />
+        </svg>
+        Marks Calculator
+      </a>
+
+      <a href="faculty.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Student Records
+      </a>
+
+      <div class="sidebar-section-label">Tools</div>
+
+      <a href="faculty.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        Faculty Panel
+        <span class="nav-badge">Faculty</span>
+      </a>
+
+      <a href="ai-assistant.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M12 2a10 10 0 1 0 10 10" />
+          <path d="M12 8v4l3 3" />
+          <circle cx="19" cy="5" r="3" fill="currentColor" opacity=".3" />
+        </svg>
+        AI Assistant
+        <span class="nav-badge">Gemini</span>
+      </a>
+
+      <a href="faculty.html#tab-reports" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        Reports
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <!-- Student / Faculty role switch -->
+      <div class="sidebar-role-switch">
+        <div class="role-btn active" id="roleStudent">Student</div>
+        <a href="faculty.html" class="role-btn" id="roleFaculty">Faculty</a>
+      </div>
+
+      <!-- Active student info -->
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-avatar" id="sidebarAvatar">AP</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">Aarav Patil</div>
+          <div class="sidebar-user-sub" id="sidebarUserRoll">TY-COMP-01 · Demo</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px; color:var(--sidebar-label); text-align:center; padding: 0 var(--sp-3);">
+        🔒 localStorage demo — not production auth
+      </div>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ═══════════════════════════════════════════════════ MAIN ════ -->
+  <div class="app-main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="topbar-menu-btn" id="openSidebar" aria-label="Open sidebar">☰</button>
+
+      <div class="topbar-search">
+        <svg class="topbar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" class="topbar-search-input" placeholder="Search courses, components…" id="topbarSearch">
+      </div>
+
+      <div class="topbar-right">
+        <!-- Student switcher -->
+        <select id="globalStudentSelect"
+          style="height:36px;background:var(--cream-dark);border:1.5px solid var(--border-med);border-radius:var(--r-full);padding:0 var(--sp-4);font-size:var(--text-sm);font-weight:600;color:var(--ink);cursor:pointer;"
+          title="Switch active demo student" aria-label="Switch student"></select>
+
+        <!-- Notifications -->
+        <button class="topbar-icon-btn" id="notifBtn" aria-label="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span class="topbar-notif-dot" id="notifDot"></span>
+        </button>
+
+        <!-- Theme toggle -->
+        <button class="topbar-theme-btn" id="themeToggle" aria-label="Toggle dark/light theme"
+          title="Toggle theme">🌙</button>
+
+        <!-- Avatar -->
+        <div class="topbar-avatar" id="topbarAvatar" title="Active student">AP</div>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main class="page-content">
+
+      <!-- Demo notice -->
+      <div class="demo-notice mb-6">
+        <span>ℹ️</span>
+        <span><strong>Demo Environment:</strong> All student profiles are fictional records stored only in browser
+          localStorage. <a href="landing.html" style="color:var(--yellow-text);text-decoration:underline;">Learn more
+            →</a></span>
+      </div>
+
+      <!-- Page header: greeting -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-greeting" id="pageGreeting">Stay up to date, Student.</h1>
+          <p class="page-subgreeting">Here's your Semester V snapshot — <span id="profile-roll">TY-COMP-01</span></p>
+        </div>
+        <div style="display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;">
+          <div id="profile-tracks" style="display:flex;gap:var(--sp-2);flex-wrap:wrap;"></div>
+          <a href="calculator.html" class="btn btn-primary btn-sm">+ Add Marks</a>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-row mb-6 stagger">
+
+        <div class="kpi-card card-event-yellow animate-fade-up">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            Marks Entered
+          </div>
+          <div class="kpi-value" id="stat-entered-marks">— / —</div>
+          <div class="kpi-sub" id="stat-entered-subtext">Loading…</div>
+        </div>
+
+        <div class="kpi-card card-event-blue animate-fade-up">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+            Evaluated %
+          </div>
+          <div class="kpi-value" id="stat-percentage">—%</div>
+          <div class="kpi-sub">Of assessed components</div>
+        </div>
+
+        <div class="kpi-card card-event-beige animate-fade-up">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Evaluation Progress
+          </div>
+          <div class="kpi-value" id="stat-progress">— of —</div>
+          <div class="kpi-sub" id="stat-progress-subtext">Components evaluated</div>
+        </div>
+
+        <div class="kpi-card card-event-mint animate-fade-up">
+          <div class="kpi-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            Semester Standing
+          </div>
+          <div class="kpi-value" id="stat-projected">—%</div>
+          <div class="kpi-sub" id="stat-projected-subtext">Projected out of 650</div>
+        </div>
+
+      </div>
+
+      <!-- Dashboard body grid: charts + right panel -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--sp-5);">
+
+        <!-- LEFT: Charts -->
+        <div style="display:flex;flex-direction:column;gap:var(--sp-5);">
+
+          <!-- Subject performance chart -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Subject-wise Performance</div>
+                <div class="card-sub">Marks obtained vs evaluated maximum per course</div>
+              </div>
+              <a href="calculator.html" class="btn btn-ghost btn-sm">Edit marks →</a>
+            </div>
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="subjectPerformanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Assessment breakdown chart -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Assessment Component Breakdown</div>
+                <div class="card-sub">Theory vs lab vs pending out of 650 total marks</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-5);">
+              <div class="chart-wrap" style="height:220px;">
+                <canvas id="assessmentBreakdownChart"></canvas>
+              </div>
+              <div id="breakdownLegend"
+                style="display:flex;flex-direction:column;justify-content:center;gap:var(--sp-3);"></div>
+            </div>
+          </div>
+
+          <!-- Course breakdown table -->
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div class="card-header" style="padding:var(--sp-5) var(--sp-5) 0;">
+              <div>
+                <div class="card-title">All Courses — Component Detail</div>
+                <div class="card-sub">Entered marks and pending assessments per subject</div>
+              </div>
+            </div>
+            <div class="table-wrap" style="border:none;border-radius:0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Course</th>
+                    <th>Category</th>
+                    <th>Components</th>
+                    <th>Earned / Max</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-courses-body">
+                  <!-- populated by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div><!-- /LEFT -->
+
+        <!-- RIGHT: Sidebar panel -->
+        <div style="display:flex;flex-direction:column;gap:var(--sp-5);">
+
+          <!-- Radial Progress: 650 marks -->
+          <div class="card card-beige" style="text-align:center;">
+            <div class="card-title mb-4">Semester Progress</div>
+            <div style="display:flex;justify-content:center;margin-bottom:var(--sp-4);">
+              <div class="radial-progress" id="radialProgress" style="width:140px;height:140px;">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  <circle class="rp-bg" cx="70" cy="70" r="56" />
+                  <circle class="rp-fill" id="rp-fill-circle" cx="70" cy="70" r="56" stroke-dasharray="351.86"
+                    stroke-dashoffset="351.86" />
+                </svg>
+                <div class="rp-text">
+                  <span class="rp-value" id="rp-value">0%</span>
+                  <span class="rp-label">of 650</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--ink-muted);">
+              <span>0</span>
+              <span id="rp-earned-label">0 earned</span>
+              <span>650</span>
+            </div>
+          </div>
+
+          <!-- Pending assessments -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Pending Assessments</div>
+              <span class="chip chip-coral" id="pendingCountChip">0</span>
+            </div>
+            <div id="pendingAssessmentsList">
+              <!-- populated by app.js -->
+            </div>
+            <div id="pendingEmptyState" class="empty-state" style="display:none;padding:var(--sp-6);">
+              <div class="empty-icon">✅</div>
+              <div class="empty-title">All done!</div>
+              <p class="empty-sub">No pending assessments found.</p>
+            </div>
+          </div>
+
+          <!-- Elective tracks -->
+          <div class="card card-beige">
+            <div class="card-title mb-4">Your Elective Tracks</div>
+            <div id="profile-tracks-panel" style="display:flex;flex-direction:column;gap:var(--sp-3);">
+              <!-- populated by app.js -->
+            </div>
+            <a href="calculator.html" class="btn btn-secondary btn-sm"
+              style="width:100%;text-align:center;justify-content:center;margin-top:var(--sp-4);">Change Elective
+              Tracks</a>
+          </div>
+
+        </div><!-- /RIGHT -->
+
+      </div>
+
+    </main>
+
+    <footer class="site-footer">
+      SNJB's Late Sau. K. B. Jain College of Engineering, Chandwad &bull;
+      Autonomous Institute Affiliated to SPPU &bull;
+      T.Y. B.Tech Computer Engineering · Semester V · AY 2026-27
+    </footer>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- Scripts -->
+  <script src="js/data/syllabus-data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/app2.js"></script>
+</body>
+
+</html>

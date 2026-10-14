@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Evaluation Panel | SNJB Marks Assistant</title>
+  <meta name="description" content="Faculty evaluation and student records management for T.Y. B.Tech Computer Engineering Semester V.">
+  <link rel="stylesheet" href="css/design.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Faculty-specific extras */
+    .student-row-progress {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .rank-badge {
+      width: 22px; height: 22px;
+      border-radius: var(--r-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* CSV preview table row colours */
+    .csv-row-valid td { background: rgba(191,229,207,.2); }
+    .csv-row-error td { background: rgba(242,165,154,.15); }
+
+    /* Schedule card */
+    .sched-col { display: flex; flex-direction: column; gap: var(--sp-2); }
+    .sched-card {
+      border-radius: var(--r-md);
+      padding: var(--sp-3) var(--sp-4);
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="app-page">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="appSidebar">
+  <button class="sidebar-close-btn" id="closeSidebar">✕</button>
+  <div class="sidebar-brand">
+    <div class="sidebar-logo">S</div>
+    <div class="sidebar-wordmark">snjb marks<small>Faculty Portal</small></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-label">General</div>
+    <a href="index.html" class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="calculator.html" class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+      Marks Calculator
+    </a>
+    <a href="faculty.html" class="nav-item active" aria-current="page">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Student Records
+      <span class="nav-badge">8</span>
+    </a>
+    <div class="sidebar-section-label">Tools</div>
+    <a href="faculty.html" class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Faculty Panel
+      <span class="nav-badge" style="background:var(--yellow);">Workspace</span>
+    </a>
+    <a href="ai-assistant.html" class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/></svg>
+      AI Assistant
+      <span class="nav-badge">Gemini</span>
+    </a>
+    <a href="#tab-reports" class="nav-item" id="navReports">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Reports & Analytics
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-role-switch">
+      <a href="index.html" class="role-btn">Student</a>
+      <div class="role-btn active">Faculty</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarAvatar" style="background:var(--pink);">AP</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Aarav Patil</div>
+        <div class="sidebar-user-sub" id="sidebarUserRoll">TY-COMP-01 · Demo</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--sidebar-label);text-align:center;padding:0 var(--sp-3);">
+      🔒 localStorage demo — not production auth
+    </div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MAIN -->
+<div class="app-main">
+  <header class="topbar">
+    <button class="topbar-menu-btn" id="openSidebar">☰</button>
+    <div class="topbar-search">
+      <svg class="topbar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="topbar-search-input" id="faculty-search-input" placeholder="Search students, roll numbers…">
+    </div>
+    <div class="topbar-right">
+      <select id="globalStudentSelect" style="height:36px;background:var(--cream-dark);border:1.5px solid var(--border-med);border-radius:var(--r-full);padding:0 var(--sp-4);font-size:var(--text-sm);font-weight:600;color:var(--ink);cursor:pointer;" aria-label="Switch active student"></select>
+      <button class="topbar-theme-btn" id="themeToggle">🌙</button>
+      <div class="topbar-avatar" id="topbarAvatar">AP</div>
+    </div>
+  </header>
+
+  <main class="page-content">
+
+    <!-- Demo notice -->
+    <div class="demo-notice mb-6">
+      <span>ℹ️</span>
+      <span><strong>Faculty Demo Environment:</strong> Fictional student records stored in localStorage only. Production requires server-side auth, RBAC, and audit logs. Do not enter real student data.</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-greeting">Student Records & Evaluation.</h1>
+        <p class="page-subgreeting">Semester V continuous assessment management for T.Y. Computer Engineering</p>
+      </div>
+    </div>
+
+    <!-- Cohort KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);margin-bottom:var(--sp-6);" class="stagger">
+      <div class="kpi-card card-event-beige animate-fade-up">
+        <div class="kpi-label">Enrolled (Demo)</div>
+        <div class="kpi-value" id="cohort-count">—</div>
+        <div class="kpi-sub">Fictional profiles</div>
+      </div>
+      <div class="kpi-card card-event-yellow animate-fade-up">
+        <div class="kpi-label">Class Avg (Evaluated)</div>
+        <div class="kpi-value" id="cohort-avg">—%</div>
+        <div class="kpi-sub">Across assessed marks</div>
+      </div>
+      <div class="kpi-card card-event-mint animate-fade-up">
+        <div class="kpi-label">Top Performer</div>
+        <div class="kpi-value" style="font-size:var(--text-lg);" id="cohort-top">—</div>
+        <div class="kpi-sub">Highest evaluated %</div>
+      </div>
+      <div class="kpi-card card-event-coral animate-fade-up">
+        <div class="kpi-label">Class Pending Tasks</div>
+        <div class="kpi-value" id="cohort-pending">—</div>
+        <div class="kpi-sub">Unassessed exams total</div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tabs mb-6" role="tablist" id="facultyTabs">
+      <button class="tab-btn active" data-tab="tab-roster" role="tab" aria-selected="true">📋 Student Records</button>
+      <button class="tab-btn" data-tab="tab-evaluation" role="tab">✍️ Evaluation Panel</button>
+      <button class="tab-btn" data-tab="tab-bulk" role="tab">📤 Bulk CSV / JSON</button>
+      <button class="tab-btn" data-tab="tab-reports" role="tab" id="reportTabBtn">📊 Reports & Analytics</button>
+    </div>
+
+    <!-- ════════════════════════════════ TAB 1: ROSTER ════════ -->
+    <div class="tab-pane active" id="tab-roster">
+
+      <!-- Toolbar -->
+      <div class="faculty-toolbar">
+        <div class="faculty-toolbar" style="flex-wrap:nowrap;gap:var(--sp-2);">
+          <select id="filter-pec" class="filter-select">
+            <option value="">All PEC-I Tracks</option>
+          </select>
+          <select id="filter-mdm" class="filter-select">
+            <option value="">All MDM-III Tracks</option>
+          </select>
+          <select id="filter-status" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="pending">Has Pending</option>
+            <option value="completed">All Evaluated</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" id="btn-clear-filters">Clear filters</button>
+        </div>
+        <div class="faculty-toolbar-right">
+          <button class="btn btn-secondary btn-sm" id="btn-export-roster-csv">Export CSV</button>
+          <button class="btn btn-secondary btn-sm" id="btn-export-roster">Export JSON</button>
+          <button class="btn btn-primary btn-sm" id="btn-reset-roster" style="background:var(--coral-text);border-color:var(--coral-text);">Reset Demo</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap" style="border:none;border-radius:0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>PEC-I Track</th>
+                <th>MDM-III</th>
+                <th>OE-II</th>
+                <th>Marks (Eval.)</th>
+                <th>%</th>
+                <th>Standing /650</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="faculty-roster-body">
+              <!-- populated by app2.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ TAB 2: EVALUATION ════ -->
+    <div class="tab-pane" id="tab-evaluation">
+
+      <!-- Student picker -->
+      <div class="card card-beige mb-5">
+        <div style="display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" id="eval-btn-prev">← Prev</button>
+          <select id="eval-student-select" class="field-input" style="flex:1;min-width:220px;max-width:340px;height:40px;cursor:pointer;font-weight:600;"></select>
+          <button class="btn btn-secondary btn-sm" id="eval-btn-next">Next →</button>
+          <div style="margin-left:auto;display:flex;gap:var(--sp-3);">
+            <button class="btn btn-secondary btn-sm" id="btn-reset-single-student">Reset Student</button>
+            <button class="btn btn-primary btn-sm" id="btn-save-evaluation">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Save Changes
+            </button>
+          </div>
+          <div id="eval-save-status-indicator" style="font-size:var(--text-sm);font-weight:600;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Student KPI summary cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);margin-bottom:var(--sp-5);" id="eval-student-summary-cards"></div>
+
+      <!-- Evaluation grid table -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:var(--sp-5);">
+        <div class="card-header" style="padding:var(--sp-5) var(--sp-5) 0;">
+          <div>
+            <div class="card-title">Continuous Evaluation Entry Grid</div>
+            <div class="card-sub">Blank = Pending (not 0). N/A = Not applicable to this course.</div>
+          </div>
+        </div>
+        <div class="table-wrap" style="border:none;border-radius:0;">
+          <table class="data-table eval-course-table">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Course</th>
+                <th>Cat.</th>
+                <th style="text-align:center;">CIE /20</th>
+                <th style="text-align:center;">MSE /20</th>
+                <th style="text-align:center;">SEE /60</th>
+                <th style="text-align:center;">TW /25</th>
+                <th style="text-align:center;">PR /50</th>
+                <th style="text-align:center;">OR /25</th>
+                <th style="text-align:center;">Max</th>
+                <th>Progress</th>
+              </tr>
+            </thead>
+            <tbody id="eval-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pending callout -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Pending Components for Selected Student</div>
+          <span class="chip chip-coral" id="eval-pending-callout-count">0 Pending</span>
+        </div>
+        <div id="eval-pending-callout-list" style="display:flex;flex-wrap:wrap;gap:var(--sp-2);padding:var(--sp-2) 0;"></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ TAB 3: BULK CSV ═══════ -->
+    <div class="tab-pane" id="tab-bulk">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-5);">
+
+        <!-- CSV Import -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Bulk CSV Marks Import</div>
+          </div>
+
+          <div class="drop-zone mb-4" id="csvDropZone">
+            <div style="font-size:32px;margin-bottom:var(--sp-3);">📄</div>
+            <div style="font-weight:700;margin-bottom:var(--sp-2);">Drop CSV file here</div>
+            <div style="font-size:var(--text-sm);color:var(--ink-muted);margin-bottom:var(--sp-4);">or paste content below</div>
+            <button class="btn btn-secondary btn-sm" id="btn-trigger-csv-file">Choose File</button>
+            <input type="file" id="bulk-csv-file-input" accept=".csv" style="display:none;">
+          </div>
+
+          <div class="field mb-4">
+            <label class="field-label" for="csv-paste-textarea">Or paste CSV content</label>
+            <textarea id="csv-paste-textarea" class="field-textarea" rows="7"
+              placeholder="RollNo,StudentName,CourseId,Component,Marks&#10;TY-COMP-01,Aarav Patil,pcc-automata,cie,18"></textarea>
+          </div>
+
+          <div style="display:flex;gap:var(--sp-3);">
+            <button class="btn btn-primary btn-sm" id="btn-validate-csv">Validate & Preview</button>
+            <button class="btn btn-ghost btn-sm" id="btn-clear-csv-text">Clear</button>
+            <button class="btn btn-secondary btn-sm" id="btn-download-csv-template">Download Template</button>
+          </div>
+        </div>
+
+        <!-- Export / Backup -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Export & Backup</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+            <div style="padding:var(--sp-4);background:var(--cream-dark);border-radius:var(--r-lg);border:1.5px solid var(--border);">
+              <div style="font-weight:700;font-size:var(--text-sm);margin-bottom:var(--sp-2);">CSV Marksheet Export</div>
+              <p style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:var(--sp-3);">Component-wise marksheet for all students, Excel-compatible.</p>
+              <button class="btn btn-primary btn-sm" id="btn-export-csv-direct">Export Full Marksheet (CSV)</button>
+            </div>
+
+            <div style="padding:var(--sp-4);background:var(--cream-dark);border-radius:var(--r-lg);border:1.5px solid var(--border);">
+              <div style="font-weight:700;font-size:var(--text-sm);margin-bottom:var(--sp-2);">JSON Cohort Backup & Restore</div>
+              <p style="font-size:var(--text-xs);color:var(--ink-muted);margin-bottom:var(--sp-3);">Full state including elective tracks and mark matrices.</p>
+              <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" id="btn-export-json-direct">Export JSON</button>
+                <button class="btn btn-secondary btn-sm" id="btn-import-roster">Import JSON</button>
+                <input type="file" id="import-file-input" accept=".json" style="display:none;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSV preview card -->
+      <div class="card" id="csv-preview-card" style="display:none;margin-top:var(--sp-5);">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Validation & Import Preview</div>
+            <div class="card-sub" id="csv-preview-status-text">Validation results</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-apply-csv-entries" style="display:none;">✔ Commit Valid Entries</button>
+        </div>
+
+        <!-- Error list -->
+        <div id="csv-error-display" style="display:none;background:var(--coral-dim);border:1.5px solid var(--coral);border-radius:var(--r-md);padding:var(--sp-4);margin-bottom:var(--sp-4);">
+          <div style="font-weight:700;color:var(--coral-text);margin-bottom:var(--sp-2);">Validation Issues:</div>
+          <ul id="csv-error-list" style="font-size:var(--text-xs);color:var(--coral-text);padding-left:var(--sp-4);display:flex;flex-direction:column;gap:4px;"></ul>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Row</th><th>Roll No</th><th>Student</th><th>Course</th><th>Component</th><th>New Mark</th><th>Previous</th><th>Status</th></tr>
+            </thead>
+            <tbody id="csv-preview-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════ TAB 4: REPORTS ════════ -->
+    <div class="tab-pane" id="tab-reports">
+      <div style="display:flex;justify-content:flex-end;gap:var(--sp-3);margin-bottom:var(--sp-5);">
+        <button class="btn btn-secondary btn-sm" id="btn-export-subject-csv">Export Subject CSV</button>
+        <button class="btn btn-primary btn-sm" id="btn-export-class-summary-csv">Export Class Summary CSV</button>
+      </div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-5);margin-bottom:var(--sp-5);">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Class Performance Tier Distribution</div></div>
+          <div class="chart-wrap" style="height:260px;"><canvas id="cohortDistributionChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Course Average Scores</div></div>
+          <div class="chart-wrap" style="height:260px;"><canvas id="courseAveragesChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Subject breakdown table -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="padding:var(--sp-5) var(--sp-5) 0;">
+          <div class="card-title">Subject-wise Evaluation Summaries</div>
+        </div>
+        <div class="table-wrap" style="border:none;border-radius:0;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Course</th><th>Category</th><th>Enrolled</th>
+                <th>Avg Marks</th><th>Avg %</th><th>Highest</th><th>Lowest</th>
+                <th>Evaluated Comps</th><th>Pending Comps</th>
+              </tr>
+            </thead>
+            <tbody id="reports-course-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    SNJB's Late Sau. K. B. Jain College of Engineering, Chandwad &bull; Autonomous · SPPU &bull; TY B.Tech CS · Sem V · AY 2026-27
+  </footer>
+</div>
+
+<!-- Toast -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Student Details Modal -->
+<div class="modal-overlay" id="studentDetailsModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalStudentTitle">Student Details</div>
+        <div style="font-size:var(--text-xs);color:var(--ink-muted);margin-top:2px;" id="modalStudentSub"></div>
+      </div>
+      <button class="modal-close" id="modalCloseBtn">✕</button>
+    </div>
+    <div class="modal-body" id="modalStudentBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-sm" id="modalBtnClose">Close</button>
+      <button class="btn btn-secondary btn-sm" id="modalBtnDashboard">View Dashboard</button>
+      <button class="btn btn-primary btn-sm" id="modalBtnEvaluate">Evaluate Marks</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data/syllabus-data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app2.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marks Calculator | SNJB Marks Assistant</title>
+  <meta name="description" content="Live marks calculator for T.Y. B.Tech Computer Engineering Semester V.">
+  <link rel="stylesheet" href="css/design.css">
+</head>
+
+<body class="app-page">
+
+  <!-- ═══════════════════════════════════════════════════ SIDEBAR ═══ -->
+  <aside class="sidebar" id="appSidebar">
+    <button class="sidebar-close-btn" id="closeSidebar" aria-label="Close">✕</button>
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">S</div>
+      <div class="sidebar-wordmark">snjb marks<small>Sem V · AY 2026-27</small></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">General</div>
+      <a href="index.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Dashboard
+      </a>
+      <a href="calculator.html" class="nav-item active" aria-current="page">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <rect x="4" y="2" width="16" height="20" rx="2" />
+          <line x1="8" y1="6" x2="16" y2="6" />
+          <line x1="8" y1="10" x2="16" y2="10" />
+          <line x1="8" y1="14" x2="12" y2="14" />
+        </svg>
+        Marks Calculator
+      </a>
+      <a href="faculty.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Student Records
+      </a>
+      <div class="sidebar-section-label">Tools</div>
+      <a href="faculty.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        Faculty Panel
+      </a>
+      <a href="ai-assistant.html" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M12 2a10 10 0 1 0 10 10" />
+          <path d="M12 8v4l3 3" />
+        </svg>
+        AI Assistant
+        <span class="nav-badge">Gemini</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-role-switch">
+        <div class="role-btn active">Student</div>
+        <a href="faculty.html" class="role-btn">Faculty</a>
+      </div>
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-avatar" id="sidebarAvatar">AP</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">Aarav Patil</div>
+          <div class="sidebar-user-sub" id="sidebarUserRoll">TY-COMP-01</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ═══════════════════════════════════════════════════ MAIN ════ -->
+  <div class="app-main">
+    <header class="topbar">
+      <button class="topbar-menu-btn" id="openSidebar" aria-label="Open sidebar">☰</button>
+      <div class="topbar-search">
+        <svg class="topbar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" class="topbar-search-input" placeholder="Filter courses…" id="topbarSearch">
+      </div>
+      <div class="topbar-right">
+        <select id="globalStudentSelect"
+          style="height:36px;background:var(--cream-dark);border:1.5px solid var(--border-med);border-radius:var(--r-full);padding:0 var(--sp-4);font-size:var(--text-sm);font-weight:600;color:var(--ink);cursor:pointer;"
+          aria-label="Switch student"></select>
+        <button class="topbar-theme-btn" id="themeToggle" aria-label="Toggle theme">🌙</button>
+        <div class="topbar-avatar" id="topbarAvatar">AP</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-greeting">Enter your marks.</h1>
+          <p class="page-subgreeting">Live validation — blank fields stay <em>Pending</em>, never forced to zero.</p>
+        </div>
+        <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" id="btn-reset-calculator">Reset to Defaults</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            Save Marks
+          </button>
+        </div>
+      </div>
+
+      <!-- Elective track selectors -->
+      <div class="card card-beige mb-6">
+        <div class="card-header">
+          <div class="card-title">Elective Track Selection</div>
+          <span class="chip chip-pink">These define your 9 active courses</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4);">
+          <div class="field">
+            <label class="field-label" for="select-pec1">PEC-I Elective</label>
+            <select id="select-pec1" class="field-input" style="height:40px;cursor:pointer;"></select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="select-mdm3">MDM-III Elective</label>
+            <select id="select-mdm3" class="field-input" style="height:40px;cursor:pointer;"></select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="select-oe2">OE-II Elective</label>
+            <select id="select-oe2" class="field-input" style="height:40px;cursor:pointer;"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column layout: course inputs + sticky summary -->
+      <div class="calc-layout">
+
+        <!-- Course inputs area -->
+        <div>
+          <div class="pill-tabs mb-5" id="courseTabs" role="tablist">
+            <!-- populated by app2.js -->
+          </div>
+
+          <div id="calcCourseGrid" style="display:flex;flex-direction:column;gap:var(--sp-5);">
+            <!-- Course cards populated by app2.js -->
+          </div>
+        </div>
+
+        <!-- Sticky live summary -->
+        <div class="calc-sticky">
+          <div class="card" style="background:var(--ink);color:var(--cream);border-color:var(--ink);">
+            <div
+              style="font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:var(--sp-3);">
+              Live Total</div>
+            <div style="font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:1;" id="calc-total-entered">0
+            </div>
+            <div style="font-size:var(--text-sm);opacity:.5;margin-top:var(--sp-1);">out of <span
+                id="calc-max-entered">0</span> evaluated max</div>
+
+            <div style="height:1px;background:rgba(255,255,255,.1);margin:var(--sp-5) 0;"></div>
+
+            <div style="display:flex;flex-direction:column;gap:var(--sp-4);">
+              <div>
+                <div
+                  style="font-size:var(--text-xs);opacity:.5;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">
+                  Evaluated %</div>
+                <div style="font-size:var(--text-2xl);font-weight:800;" id="calc-entered-percentage">—%</div>
+              </div>
+              <div>
+                <div
+                  style="font-size:var(--text-xs);opacity:.5;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">
+                  Semester Standing (/ 650)</div>
+                <div style="font-size:var(--text-xl);font-weight:700;" id="calc-semester-standing">—%</div>
+              </div>
+              <div>
+                <div
+                  style="font-size:var(--text-xs);opacity:.5;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">
+                  Pending Components</div>
+                <div style="font-size:var(--text-xl);font-weight:700;color:var(--yellow);" id="calc-pending-count">— of
+                  21</div>
+              </div>
+            </div>
+
+            <div style="height:1px;background:rgba(255,255,255,.1);margin:var(--sp-5) 0;"></div>
+
+            <!-- Mini progress bar -->
+            <div style="font-size:var(--text-xs);opacity:.5;margin-bottom:var(--sp-2);">Progress toward 650</div>
+            <div style="height:6px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;">
+              <div id="calc-progress-bar"
+                style="height:100%;background:var(--yellow);border-radius:999px;width:0%;transition:width .3s ease;">
+              </div>
+            </div>
+
+            <div style="height:1px;background:rgba(255,255,255,.1);margin:var(--sp-5) 0;"></div>
+
+            <div id="calc-save-chip"
+              style="display:none;font-size:var(--text-xs);background:rgba(255,255,255,.12);padding:6px 12px;border-radius:999px;text-align:center;color:var(--mint);">
+              ✓ Saved locally
+            </div>
+
+            <button class="btn btn-yellow btn-sm" id="calc-save-btn-inner"
+              style="width:100%;justify-content:center;margin-top:var(--sp-3);">Save All Marks</button>
+          </div>
+
+          <!-- Validation summary -->
+          <div class="card card-beige" style="margin-top:var(--sp-4);" id="validationSummaryCard">
+            <div class="card-title mb-3" style="font-size:var(--text-sm);">Validation Status</div>
+            <div id="validationSummaryList"
+              style="display:flex;flex-direction:column;gap:var(--sp-2);font-size:var(--text-xs);">
+              <div style="color:var(--ink-muted);">Enter marks above to see validation.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /calc-layout -->
+
+    </main>
+
+    <footer class="site-footer">
+      SNJB's Late Sau. K. B. Jain College of Engineering, Chandwad &bull; Autonomous · SPPU &bull; TY B.Tech CS · Sem V
+      · AY 2026-27
+    </footer>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-stack" id="toastStack"></div>
+
+  <!-- Reset confirm modal -->
+  <div class="modal-overlay" id="resetModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Reset marks to defaults?</div>
+        <button class="modal-close" id="resetModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--ink-muted);font-size:var(--text-sm);line-height:1.6;">
+          This will clear all entered marks for <strong id="resetModalStudentName">this student</strong> and restore the
+          fictional demo default values. This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="resetModalCancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="resetModalConfirm">Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data/syllabus-data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/app2.js"></script>
+</body>
+
+</html>

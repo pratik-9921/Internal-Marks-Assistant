@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNJB Marks Assistant — Your Semester, Calculated.</title>
+  <meta name="description"
+    content="Browser-based marks calculator, student dashboard, faculty evaluation panel and AI assistant for T.Y. B.Tech Computer Engineering Semester V, SNJB COE Chandwad.">
+  <link rel="stylesheet" href="css/design.css">
+  <style>
+    /* Landing-page extras */
+    .nav-link-active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .hero-dash-mock {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-lift);
+    }
+
+    .dash-mock-topbar {
+      background: var(--cream-dark);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mock-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dash-mock-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mock-kpi-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mock-kpi {
+      flex: 1;
+      height: 52px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 10px;
+    }
+
+    .mock-bar-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      height: 60px;
+    }
+
+    .mock-bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      transform-origin: bottom;
+      animation: barGrow .5s var(--ease) both;
+    }
+
+    .mock-bar:nth-child(1) {
+      animation-delay: .1s;
+    }
+
+    .mock-bar:nth-child(2) {
+      animation-delay: .15s;
+    }
+
+    .mock-bar:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    .mock-bar:nth-child(4) {
+      animation-delay: .25s;
+    }
+
+    .mock-bar:nth-child(5) {
+      animation-delay: .3s;
+    }
+
+    /* Syllabus chips grid */
+    .syllabus-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Honest note */
+    .honest-note {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--cream-dark);
+      border-radius: var(--r-xl);
+      padding: var(--sp-6) var(--sp-8);
+      border: 1.5px solid var(--border);
+      text-align: center;
+    }
+
+    .honest-note-title {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      margin-bottom: var(--sp-3);
+    }
+
+    .honest-note-body {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+      line-height: 1.7;
+    }
+
+    /* Faculty split */
+    .faculty-split {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--sp-10) var(--sp-8);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-8);
+      align-items: center;
+    }
+
+    .faculty-split-visual {
+      background: var(--cream-dark);
+      border-radius: var(--r-xl);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+    }
+
+    .mock-roster-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .mock-roster-row:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 900px) {
+      .faculty-split {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="landing-body">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     STICKY NAV
+═══════════════════════════════════════════════════════════════ -->
+  <nav class="landing-nav">
+    <a href="landing.html" class="landing-wordmark">snjb <span>marks</span></a>
+
+    <div class="landing-nav-links">
+      <a href="#features" class="landing-nav-link">Features</a>
+      <a href="#how-it-works" class="landing-nav-link">How it works</a>
+      <a href="#ai" class="landing-nav-link">AI Assistant</a>
+      <a href="#faculty" class="landing-nav-link">Faculty</a>
+      <a href="index.html" class="landing-nav-link nav-link-active">Demo</a>
+    </div>
+
+    <a href="index.html" class="btn btn-primary btn-sm">Open dashboard →</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════ -->
+  <section class="landing-hero">
+    <!-- Left: copy -->
+    <div class="animate-fade-up">
+      <div class="chip chip-pink mb-4" style="font-size: 12px;">✦ T.Y. B.Tech Computer · Sem V · AY 2026-27</div>
+      <h1 class="hero-headline">Your semester,<br>calculated.</h1>
+      <p class="hero-sub">
+        Marks calculator, student dashboard, faculty evaluation panel and an AI assistant
+        — all wired to the real SNJB Semester V syllabus. 650 marks. 22 credits. Zero guesswork.
+      </p>
+      <div class="hero-btns">
+        <a href="index.html" class="btn btn-primary btn-lg">Try the demo</a>
+        <a href="#features" class="btn btn-secondary btn-lg">See features ↓</a>
+      </div>
+    </div>
+
+    <!-- Right: framed screenshot mock -->
+    <div class="hero-visual animate-fade-up" style="animation-delay:100ms">
+      <div class="hero-frame">
+        <div class="hero-frame-inner">
+          <!-- Top bar mock -->
+          <div class="dash-mock-topbar">
+            <div class="mock-dot" style="background:#F2A59A;"></div>
+            <div class="mock-dot" style="background:#F6D54A;"></div>
+            <div class="mock-dot" style="background:#BFE5CF;"></div>
+            <div style="flex:1;height:8px;background:var(--border);border-radius:999px;margin-left:8px;"></div>
+          </div>
+
+          <!-- KPI mock row -->
+          <div class="mock-kpi-row">
+            <div class="mock-kpi" style="background:var(--yellow);">
+              <div style="font-size:9px;font-weight:700;opacity:.6;">TOTAL MARKS</div>
+              <div style="font-size:18px;font-weight:800;color:var(--ink);">412/650</div>
+            </div>
+            <div class="mock-kpi" style="background:var(--blue);">
+              <div style="font-size:9px;font-weight:700;opacity:.6;">STANDING</div>
+              <div style="font-size:18px;font-weight:800;color:var(--blue-text);">63.4%</div>
+            </div>
+            <div class="mock-kpi" style="background:var(--mint);">
+              <div style="font-size:9px;font-weight:700;opacity:.6;">CREDITS</div>
+              <div style="font-size:18px;font-weight:800;color:var(--mint-text);">16/22</div>
+            </div>
+          </div>
+
+          <!-- Bar chart mock -->
+          <div style="background:var(--white);border-radius:10px;padding:12px;border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--ink-muted);margin-bottom:8px;">SUBJECT PERFORMANCE
+            </div>
+            <div class="mock-bar-row">
+              <div class="mock-bar" style="background:var(--ink);height:80%;"></div>
+              <div class="mock-bar" style="background:var(--blue);height:65%;"></div>
+              <div class="mock-bar" style="background:var(--ink);height:90%;"></div>
+              <div class="mock-bar" style="background:var(--mint);height:72%;"></div>
+              <div class="mock-bar" style="background:var(--pink);height:55%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating accent cards -->
+      <div class="hero-float-card hero-float-1">⚡ Live total: 412/650</div>
+      <div class="hero-float-card hero-float-2">🤖 AI: 6 pending assessments</div>
+      <div class="hero-float-card hero-float-3">✓ Credits: 16/22 covered</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     TRUST STRIP
+═══════════════════════════════════════════════════════════════ -->
+  <div class="trust-strip">
+    <span class="trust-item">📐 650 Total Marks</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">🏅 22 Credits</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">📚 9 Courses</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">🔀 3 Elective Tracks</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">👥 8 Demo Students</span>
+    <span class="trust-dot"></span>
+    <span class="trust-item">🤖 Gemini 2.5 Flash AI</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     FEATURES BENTO GRID
+═══════════════════════════════════════════════════════════════ -->
+  <section class="bento-section" id="features">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+
+    <div class="bento-grid">
+      <!-- Tile 1: Calculator (span 2) -->
+      <div class="bento-tile card-event-yellow span-2">
+        <div class="bento-tile-icon">🧮</div>
+        <div class="bento-tile-title">Live Marks Calculator with Validation</div>
+        <div class="bento-tile-sub">
+          Enter CIE, MSE, SEE, TW, PR, OR marks per course. Instant percentage calculation with max-mark validation.
+          Blank inputs stay <em>Pending</em> — never forced to 0.
+        </div>
+      </div>
+
+      <!-- Tile 2: Dashboard -->
+      <div class="bento-tile card-event-blue">
+        <div class="bento-tile-icon">📊</div>
+        <div class="bento-tile-title">Student Dashboard with Charts</div>
+        <div class="bento-tile-sub">
+          Bar charts for subject performance, doughnut for assessment breakdown, radial progress for 650 marks — all
+          live.
+        </div>
+      </div>
+
+      <!-- Tile 3: Faculty -->
+      <div class="bento-tile card-event-beige">
+        <div class="bento-tile-icon">👨‍🏫</div>
+        <div class="bento-tile-title">Faculty Roster with Search & Filter</div>
+        <div class="bento-tile-sub">
+          All 8 demo students in one searchable table. Filter by elective track or evaluation status. Drawer for
+          per-student mark entry.
+        </div>
+      </div>
+
+      <!-- Tile 4: CSV -->
+      <div class="bento-tile card-event-mint">
+        <div class="bento-tile-icon">📤</div>
+        <div class="bento-tile-title">CSV Bulk Import with Preview</div>
+        <div class="bento-tile-sub">
+          Drag-drop a CSV, see line-by-line validation before committing. Valid rows are mint, errors are coral, with
+          exact reason.
+        </div>
+      </div>
+
+      <!-- Tile 5: AI -->
+      <div class="bento-tile card-event-pink">
+        <div class="bento-tile-icon">🤖</div>
+        <div class="bento-tile-title">AI Assistant with Real Tool Access</div>
+        <div class="bento-tile-sub">
+          Gemini 2.5 Flash with function-calling. Ask class summaries, pending assessments, top performers — AI fetches
+          live data.
+        </div>
+      </div>
+
+      <!-- Tile 6: Security -->
+      <div class="bento-tile" style="background:var(--ink); color:var(--cream);">
+        <div class="bento-tile-icon" style="background:rgba(255,255,255,.1);">🔒</div>
+        <div class="bento-tile-title">Zero Hardcoded API Keys</div>
+        <div class="bento-tile-sub" style="opacity:.7;">
+          Gemini API key lives only in <code
+            style="background:rgba(255,255,255,.15);padding:2px 6px;border-radius:4px;">.env</code> on the Node server.
+          Never in any client-side file — verified by automated tests.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════════════════════ -->
+  <section class="steps-section" id="how-it-works">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Up and running in minutes.</h2>
+
+    <div class="steps-row stagger">
+      <div class="step-card animate-fade-up">
+        <div class="step-number">1</div>
+        <div class="step-title">Enter your marks</div>
+        <p class="step-sub">
+          Open the Marks Calculator, select your elective tracks (PEC-I, MDM-III, OE-II), and type in your CIE, MSE, TW,
+          PR and OR marks per course. Live validation catches errors instantly.
+        </p>
+      </div>
+
+      <div class="step-card animate-fade-up">
+        <div class="step-number">2</div>
+        <div class="step-title">See your standing</div>
+        <p class="step-sub">
+          The Dashboard shows your total out of 650, percentage of evaluated marks, semester standing, credits covered,
+          and a chart of all 9 courses — updated in real-time.
+        </p>
+      </div>
+
+      <div class="step-card animate-fade-up">
+        <div class="step-number">3</div>
+        <div class="step-title">Ask the AI</div>
+        <p class="step-sub">
+          Type any question — "Which subjects do I need to focus on?" or "Who is the class top performer?" — and Gemini
+          2.5 Flash calls the right tool and gives you a grounded answer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     AI SHOWCASE (mock chat)
+═══════════════════════════════════════════════════════════════ -->
+  <section class="ai-section" id="ai">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 var(--sp-8);">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-10); align-items: center;">
+        <div>
+          <div class="section-label">AI Assistant</div>
+          <h2 class="section-title" style="margin-bottom: var(--sp-4);">Ask anything about your semester.</h2>
+          <p style="font-size: var(--text-md); color: var(--ink-muted); line-height: 1.7; margin-bottom: var(--sp-5);">
+            Powered by Gemini 2.5 Flash with function-calling. The AI doesn't guess — it calls
+            <code
+              style="background:var(--cream-dark);padding:2px 8px;border-radius:6px;font-size:12px;">get_marks_summary</code>,
+            <code
+              style="background:var(--cream-dark);padding:2px 8px;border-radius:6px;font-size:12px;">get_pending_assessments</code>,
+            <code
+              style="background:var(--cream-dark);padding:2px 8px;border-radius:6px;font-size:12px;">get_class_roster_summary</code>
+            and more to fetch real data before answering.
+          </p>
+          <a href="ai-assistant.html" class="btn btn-primary">Open AI Assistant →</a>
+        </div>
+
+        <!-- Mock chat -->
+        <div class="ai-mock">
+          <div class="ai-mock-header">
+            <div class="mock-dot" style="background:#F2A59A;"></div>
+            <div class="mock-dot" style="background:#F6D54A;"></div>
+            <div class="mock-dot" style="background:#BFE5CF;"></div>
+            <span style="color:rgba(255,255,255,.5);font-size:12px;margin-left:8px;">SNJB Academic Advisor</span>
+            <div class="status-pill status-online" style="margin-left:auto;">
+              <div class="status-pill-dot"></div>Gemini Online
+            </div>
+          </div>
+
+          <div class="ai-mock-body">
+            <!-- User message -->
+            <div class="flex gap-3 items-center" style="justify-content: flex-end;">
+              <div class="msg-bubble user">Who is the class top performer?</div>
+              <div class="msg-avatar" style="background:var(--ink);color:var(--cream);">R</div>
+            </div>
+
+            <!-- Tool chip -->
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div class="msg-avatar" style="background:var(--yellow);color:var(--ink);">AI</div>
+              <div>
+                <div class="tool-chip" style="font-size:11px;">
+                  <div class="tool-chip-dot"></div>
+                  get_class_roster_summary · executed
+                </div>
+                <div class="msg-bubble assistant" style="margin-top:8px;">
+                  🏆 <strong>Sneha Deshmukh (TY-COMP-02)</strong> is the top performer with an evaluated percentage of
+                  <strong>93.4%</strong> (355/380 of assessed marks). She is on the Cyber Security & Digital Forensics
+                  PEC-I track.
+                </div>
+              </div>
+            </div>
+
+            <!-- Second user message -->
+            <div class="flex gap-3 items-center" style="justify-content: flex-end;">
+              <div class="msg-bubble user">What's still pending for me?</div>
+              <div class="msg-avatar" style="background:var(--ink);color:var(--cream);">R</div>
+            </div>
+
+            <!-- Typing -->
+            <div class="flex gap-3 items-center">
+              <div class="msg-avatar" style="background:var(--yellow);color:var(--ink);">AI</div>
+              <div class="typing-bubble">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     FACULTY SECTION
+═══════════════════════════════════════════════════════════════ -->
+  <section id="faculty">
+    <div class="faculty-split">
+      <div>
+        <div class="section-label">Faculty Evaluation</div>
+        <h2 class="section-title" style="margin-bottom: var(--sp-4);">Manage all students in one panel.</h2>
+        <p style="font-size: var(--text-md); color: var(--ink-muted); line-height: 1.7; margin-bottom: var(--sp-5);">
+          8 fictional demo students across different elective tracks. Search, filter by track or status,
+          open a drawer to enter marks per student, bulk-import from CSV, and export reports.
+        </p>
+        <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap;">
+          <a href="faculty.html" class="btn btn-primary">Open Faculty Panel →</a>
+          <a href="faculty.html#reports" class="btn btn-secondary">View Reports</a>
+        </div>
+      </div>
+
+      <!-- Mock roster table -->
+      <div class="faculty-split-visual">
+        <div
+          style="padding: 12px 16px; background: var(--cream-dark); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--ink-muted); letter-spacing: .06em; text-transform: uppercase;">
+          STUDENT ROSTER — SEM V
+        </div>
+        <div class="mock-roster-row">
+          <div class="avatar" style="background:var(--yellow);color:var(--ink);font-size:11px;flex-shrink:0;">AP</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">Aarav Patil</div>
+            <div style="font-size:11px;color:var(--ink-muted);">TY-COMP-01</div>
+          </div>
+          <span class="chip chip-mint" style="font-size:10px;">84.2%</span>
+        </div>
+        <div class="mock-roster-row">
+          <div class="avatar" style="background:var(--blue);color:var(--blue-text);font-size:11px;flex-shrink:0;">SD
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">Sneha Deshmukh</div>
+            <div style="font-size:11px;color:var(--ink-muted);">TY-COMP-02</div>
+          </div>
+          <span class="chip chip-yellow" style="font-size:10px;">93.4% 🏆</span>
+        </div>
+        <div class="mock-roster-row">
+          <div class="avatar" style="background:var(--pink);color:var(--pink-text);font-size:11px;flex-shrink:0;">RK
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">Rohan Kulkarni</div>
+            <div style="font-size:11px;color:var(--ink-muted);">TY-COMP-03</div>
+          </div>
+          <span class="chip chip-coral" style="font-size:10px;">6 pending</span>
+        </div>
+        <div class="mock-roster-row">
+          <div class="avatar" style="background:var(--mint);color:var(--mint-text);font-size:11px;flex-shrink:0;">PS
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;">Pooja Shinde</div>
+            <div style="font-size:11px;color:var(--ink-muted);">TY-COMP-04</div>
+          </div>
+          <span class="chip chip-blue" style="font-size:10px;">80.8%</span>
+        </div>
+        <div style="padding: 10px 16px; text-align: center; font-size: 12px; color: var(--ink-muted);">
+          + 4 more students → <a href="faculty.html" style="color:var(--ink);font-weight:600;">Open Faculty Panel</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     SYLLABUS SECTION
+═══════════════════════════════════════════════════════════════ -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: var(--sp-10) var(--sp-8);">
+    <div class="section-label">Syllabus</div>
+    <h2 class="section-title" style="margin-bottom: var(--sp-6);">All 9 courses, exactly as per the PDF.</h2>
+
+    <div style="display: flex; flex-direction: column; gap: var(--sp-5);">
+      <!-- Core courses -->
+      <div>
+        <div class="label mb-3">Program Core (PCC) & Value Ed (VEC)</div>
+        <div class="syllabus-chips">
+          <span class="chip chip-ink">Automata Theory · 100 marks</span>
+          <span class="chip chip-ink">Computer Network · 100 marks</span>
+          <span class="chip chip-beige" style="border: 1.5px solid var(--border-med);">Computer Network Lab · 50 marks
+            *</span>
+          <span class="chip chip-beige" style="border: 1.5px solid var(--border-med);">Environmental Studies · 50
+            marks</span>
+        </div>
+      </div>
+
+      <!-- PEC-I electives -->
+      <div>
+        <div class="label mb-3">PEC-I Basket — Choose 1</div>
+        <div class="syllabus-chips">
+          <span class="chip chip-pink">Artificial Intelligence · 100 marks</span>
+          <span class="chip chip-pink">Computer Graphics · 100 marks</span>
+          <span class="chip chip-pink">Cyber Security & Digital Forensics · 100 marks</span>
+          <span class="chip chip-pink">Pervasive Computing · 100 marks</span>
+          <span class="chip chip-pink">Web Technology · 100 marks</span>
+        </div>
+      </div>
+
+      <!-- MDM-III -->
+      <div>
+        <div class="label mb-3">MDM-III Basket — Multidisciplinary Minor</div>
+        <div class="syllabus-chips">
+          <span class="chip chip-blue">Water & Land Management · 100 marks</span>
+          <span class="chip chip-blue">HVAC & Green Building · 100 marks</span>
+          <span class="chip chip-blue">Advanced Lean Practices · 100 marks</span>
+          <span class="chip chip-blue">Drone Technology · 100 marks</span>
+        </div>
+      </div>
+
+      <!-- OE-II -->
+      <div>
+        <div class="label mb-3">OE-II Basket — Open Elective</div>
+        <div class="syllabus-chips">
+          <span class="chip chip-mint">Digital Marketing · 50 marks</span>
+          <span class="chip chip-mint">Agronics · 50 marks</span>
+          <span class="chip chip-mint">Sustainable Energy Engineering · 50 marks</span>
+          <span class="chip chip-mint">Circular Economy · 50 marks</span>
+          <span class="chip chip-mint">oe-coding · 50 marks</span>
+        </div>
+      </div>
+
+      <p style="font-size: var(--text-xs); color: var(--ink-muted);">
+        * Computer Network Lab code discrepancy: 24-PCC-CS-3-03 (p.24) vs 24-PCC-CS-3-04 (p.52) — preserved as
+        documented in source PDF.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     HONEST NOTE
+═══════════════════════════════════════════════════════════════ -->
+  <section style="padding: var(--sp-6) var(--sp-8);">
+    <div class="honest-note">
+      <div class="honest-note-title">📋 Demo Prototype — Read This</div>
+      <p class="honest-note-body">
+        This is a client-side demonstration. All student names, roll numbers, and marks are <strong>entirely
+          fictional</strong> and stored in <strong>browser localStorage only</strong>.
+        Do not enter real student data.
+        <br><br>
+        A production deployment would require server-side authentication, role-based access control, an immutable audit
+        log, and a real database — none of which are present here.
+        The Gemini AI assistant may make errors; always verify marks against official records.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     FINAL CTA BAND
+═══════════════════════════════════════════════════════════════ -->
+  <div class="cta-band">
+    <div class="cta-band-inner">
+      <h2 class="cta-band-title">Ready to explore?</h2>
+      <p class="cta-band-sub">Open the demo app and try marking, calculating, and chatting with the AI.</p>
+      <div style="display:flex;gap:var(--sp-4);justify-content:center;flex-wrap:wrap;">
+        <a href="index.html" class="btn btn-yellow btn-xl">Open the Dashboard</a>
+        <a href="ai-assistant.html" class="btn btn-secondary btn-xl"
+          style="color:rgba(247,241,227,.8);border-color:rgba(247,241,227,.2);">Chat with AI</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════════ -->
+  <footer class="landing-footer">
+    <div>
+      <strong>SNJB's Late Sau. K. B. Jain College of Engineering, Chandwad</strong>
+      <span style="margin-left:8px;color:var(--ink-muted);">Autonomous Institute · Affiliated to SPPU</span>
+    </div>
+    <div>TY B.Tech Computer Engineering · Semester V · AY 2026-27</div>
+    <div style="color:var(--ink-muted);">Demo prototype · Not for official use</div>
+  </footer>
+
+  <script>
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+
+</html>
