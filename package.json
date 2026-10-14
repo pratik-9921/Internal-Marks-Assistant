@@ -2,7 +2,6 @@
   "name": "internal-marks-assistant",
   "version": "1.0.0",
   "description": "Student marks dashboard and calculator for T.Y. B.Tech Computer Engineering Semester V at SNJB COE Chandwad",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "node test_regression.js && node test_server.js"

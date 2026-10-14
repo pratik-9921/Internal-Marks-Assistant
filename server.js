@@ -334,7 +334,7 @@ async function callGeminiApi(apiKey, userMessage, profile, history = [], roster 
 }
 
 // 5. HTTP Server Request Dispatcher
-const server = http.createServer(async (req, res) => {
+async function handleRequest(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   const pathname = parsedUrl.pathname;
 
@@ -434,7 +434,9 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": contentType });
     fs.createReadStream(filePath).pipe(res);
   });
-});
+}
+
+const server = http.createServer(handleRequest);
 
 // Start listening if run directly
 if (require.main === module) {
@@ -447,9 +449,12 @@ if (require.main === module) {
   });
 }
 
-module.exports = {
-  server,
-  executeTool,
-  GEMINI_TOOLS,
-  SYSTEM_INSTRUCTION
-};
+module.exports = handleRequest;
+module.exports.handleRequest = handleRequest;
+module.exports.server = server;
+module.exports.executeTool = executeTool;
+module.exports.GEMINI_TOOLS = GEMINI_TOOLS;
+module.exports.SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION;
+module.exports.callGeminiApi = callGeminiApi;
+module.exports.GEMINI_MODEL = GEMINI_MODEL;
+
