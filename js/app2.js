@@ -1447,6 +1447,74 @@ document.addEventListener('keydown', e => {
    PAGE 4 — AI ASSISTANT
 ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 4 — AI ASSISTANT (Hybrid: Browser Direct + Backend Mode)
+═══════════════════════════════════════════════════════════════ */
+
+let _aiActiveMode = 'none'; // 'backend' | 'client' | 'none'
+let _aiChatHistory = [];
+let _welcomePromptShown = false;
+
+const GEMINI_SYSTEM_INSTRUCTION = `You are the official Academic Assistant for Third Year B.Tech Computer Engineering (Semester V) at SNJB's Late Sau. K. B. Jain College of Engineering, Chandwad (Autonomous, AY 2026-27).
+You assist students and faculty in tracking continuous evaluation performance, pending examinations, syllabus requirements, and class cohort reports.
+
+CRITICAL INSTRUCTIONS:
+1. Always use your available tools:
+   - 'get_marks_summary': For active student marks summary.
+   - 'get_pending_assessments': For active student pending exams.
+   - 'get_class_roster_summary': For class-wide statistics, class average, and cohort pending counts.
+   - 'get_student_detail': For a specific student's marks by roll number.
+2. Ground all answers strictly on the tool results and confirmed Semester V syllabus (TYBTech-COMP_2026-27.pdf).
+3. Total semester scheme is 650 marks across 22 credits.
+4. Explain clearly:
+   - "Evaluated Performance" is based only on completed components.
+   - "Semester Standing" is progress towards the total 650 marks.
+   - Unentered exams are Pending, not zero.
+5. Provide actionable, supportive recommendations (e.g., preparation priorities for upcoming SEE exams).
+6. Note any relevant course details, such as the Computer Network Lab dual course code (24-PCC-CS-3-03 / 24-PCC-CS-3-04) if asked.
+7. Distinguish calculated facts from suggestions. Never fabricate student records or claim actions succeeded when they did not.`;
+
+const GEMINI_TOOLS = [
+  {
+    functionDeclarations: [
+      {
+        name: "get_marks_summary",
+        description: "Retrieves the active student's evaluated marks summary, including marks earned, maximum marks of completed components, percentage, and overall semester standing out of 650.",
+        parameters: { type: "OBJECT", properties: {} }
+      },
+      {
+        name: "get_pending_assessments",
+        description: "Retrieves a detailed list of all remaining pending examination and assessment components for the active student across their Semester V courses.",
+        parameters: { type: "OBJECT", properties: {} }
+      },
+      {
+        name: "get_class_roster_summary",
+        description: "Retrieves class-wide continuous evaluation statistics, class average percentage, top performers, total pending assessments across the cohort, and course summaries for faculty reporting.",
+        parameters: { type: "OBJECT", properties: {} }
+      },
+      {
+        name: "get_student_detail",
+        description: "Retrieves detailed continuous evaluation records and remaining assessments for a specific student in the class roster by roll number (e.g. 'TY-COMP-01').",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            rollNo: {
+              type: "STRING",
+              description: "The roll number of the student (e.g. 'TY-COMP-01', 'TY-COMP-02')."
+            }
+          }
+        }
+      }
+    ]
+  }
+];
+
+function getAIConfig() {
+  const apiKey = (localStorage.getItem('SNJB_GEMINI_API_KEY') || localStorage.getItem('GEMINI_API_KEY') || '').trim();
+  const backendUrl = (localStorage.getItem('SNJB_BACKEND_URL') || '').trim().replace(/\/$/, '');
+  return { apiKey, backendUrl };
+}
+
 function initAI() {
   const student = AppStorage.loadStudentProfile();
   if (!student) return;
@@ -1468,8 +1536,16 @@ function initAI() {
   document.getElementById('clearChatBtn')?.addEventListener('click', () => {
     const body = document.getElementById('chatBody');
     if (body) body.innerHTML = '';
+    _aiChatHistory = [];
     appendAIMessage('Chat cleared. Ask me anything about your semester!', false);
   });
+
+  // Settings modal triggers
+  document.getElementById('openAiSettingsBtn')?.addEventListener('click', openAiSettingsModal);
+  document.getElementById('ai-status-pill')?.addEventListener('click', openAiSettingsModal);
+  document.getElementById('saveAiSettingsBtn')?.addEventListener('click', saveAiSettings);
+  document.getElementById('clearAiSettingsBtn')?.addEventListener('click', clearAiSettings);
+  document.getElementById('toggleKeyVisibilityBtn')?.addEventListener('click', toggleKeyVisibility);
 
   // Student switcher context
   window.onStudentSwitch = rollNo => {
@@ -1477,6 +1553,69 @@ function initAI() {
     const newStud = roster.find(s => s.rollNo === rollNo) || AppStorage.loadStudentProfile();
     if (newStud) syncAIContext(newStud);
   };
+}
+
+function openAiSettingsModal() {
+  const cfg = getAIConfig();
+  const keyInput = document.getElementById('cfgGeminiKey');
+  const urlInput = document.getElementById('cfgBackendUrl');
+  const resDiv = document.getElementById('aiConfigTestResult');
+  if (keyInput) keyInput.value = cfg.apiKey;
+  if (urlInput) urlInput.value = cfg.backendUrl;
+  if (resDiv) { resDiv.style.display = 'none'; resDiv.textContent = ''; }
+  openModal('aiSettingsModal');
+}
+
+function saveAiSettings() {
+  const keyInput = document.getElementById('cfgGeminiKey');
+  const urlInput = document.getElementById('cfgBackendUrl');
+  const resDiv = document.getElementById('aiConfigTestResult');
+  const key = keyInput ? keyInput.value.trim() : '';
+  const url = urlInput ? urlInput.value.trim().replace(/\/$/, '') : '';
+
+  if (!key && !url) {
+    if (resDiv) {
+      resDiv.style.display = 'block';
+      resDiv.style.background = 'var(--coral-light)';
+      resDiv.style.color = 'var(--coral-text)';
+      resDiv.textContent = 'Please enter either a Gemini API Key or a Backend URL.';
+    }
+    return;
+  }
+
+  if (key) localStorage.setItem('SNJB_GEMINI_API_KEY', key);
+  else localStorage.removeItem('SNJB_GEMINI_API_KEY');
+
+  if (url) localStorage.setItem('SNJB_BACKEND_URL', url);
+  else localStorage.removeItem('SNJB_BACKEND_URL');
+
+  if (window.showToast) {
+    window.showToast('AI Settings updated!', 'success');
+  }
+
+  closeModal('aiSettingsModal');
+  document.getElementById('ghPagesWelcomePrompt')?.remove();
+  checkAIStatus();
+}
+
+function clearAiSettings() {
+  localStorage.removeItem('SNJB_GEMINI_API_KEY');
+  localStorage.removeItem('GEMINI_API_KEY');
+  localStorage.removeItem('SNJB_BACKEND_URL');
+  const keyInput = document.getElementById('cfgGeminiKey');
+  const urlInput = document.getElementById('cfgBackendUrl');
+  if (keyInput) keyInput.value = '';
+  if (urlInput) urlInput.value = '';
+  if (window.showToast) window.showToast('AI settings cleared.', 'info');
+  closeModal('aiSettingsModal');
+  checkAIStatus();
+}
+
+function toggleKeyVisibility() {
+  const input = document.getElementById('cfgGeminiKey');
+  if (input) {
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
 }
 
 function syncAIContext(student) {
@@ -1515,21 +1654,291 @@ function syncAIContext(student) {
 
 async function checkAIStatus() {
   const pill = document.getElementById('ai-status-pill');
-  try {
-    const res = await fetch('/api/status');
-    const data = await res.json();
+  const cfg = getAIConfig();
+  const targetBackend = cfg.backendUrl || '';
+  const isGitHubPages = window.location.hostname.includes('github.io');
+
+  // 1. Try backend status if URL specified or on local/server environment
+  if (targetBackend || !isGitHubPages) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch(`${targetBackend}/api/status`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.configured || data.apiConfigured) {
+          _aiActiveMode = 'backend';
+          if (pill) {
+            pill.className = 'status-pill status-online';
+            pill.innerHTML = '<div class="status-pill-dot"></div> Gemini Online (Backend)';
+          }
+          return;
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Client-side browser mode if API key is saved
+  if (cfg.apiKey) {
+    _aiActiveMode = 'client';
     if (pill) {
-      if (data.apiConfigured) {
-        pill.className = 'status-pill status-online';
-        pill.innerHTML = '<div class="status-pill-dot"></div> Gemini Online';
-      } else {
-        pill.className = 'status-pill status-offline';
-        pill.innerHTML = '<div class="status-pill-dot"></div> API Key Missing';
+      pill.className = 'status-pill status-online';
+      pill.innerHTML = '<div class="status-pill-dot"></div> Gemini Online (Browser)';
+    }
+    return;
+  }
+
+  // 3. Not configured yet (Static GitHub Pages)
+  _aiActiveMode = 'none';
+  if (pill) {
+    pill.className = 'status-pill status-offline';
+    pill.innerHTML = '<div class="status-pill-dot" style="background:var(--yellow-text);"></div> ⚙️ Configure AI Key';
+  }
+
+  showGitHubPagesWelcomePrompt();
+}
+
+function showGitHubPagesWelcomePrompt() {
+  if (_welcomePromptShown) return;
+  const chatBody = document.getElementById('chatBody');
+  if (!chatBody) return;
+  _welcomePromptShown = true;
+
+  const card = document.createElement('div');
+  card.className = 'msg-row animate-fade-up';
+  card.id = 'ghPagesWelcomePrompt';
+  card.innerHTML = `
+    <div class="msg-avatar" style="background:var(--yellow);color:var(--ink);font-size:10px;font-weight:800;">💡</div>
+    <div>
+      <div class="msg-bubble assistant" style="border:1.5px dashed var(--yellow-text);background:var(--cream-light);max-width:480px;">
+        <strong style="color:var(--ink);display:block;margin-bottom:6px;">🚀 GitHub Pages Static Hosting Mode</strong>
+        GitHub Pages serves static files and does not run a server backend.
+        <br><br>
+        To activate the AI Academic Advisor with real tool access in your browser:
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openAiSettingsModal()" style="font-size:12px;padding:6px 14px;">
+            🔑 Enter Gemini API Key
+          </button>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:12px;padding:6px 14px;">
+            Get Free Key →
+          </a>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--ink-muted);margin-top:4px;padding-left:4px;">Assistant Setup · Browser Storage</div>
+    </div>`;
+  chatBody.appendChild(card);
+  scrollChat();
+}
+
+/* Tool execution in the browser using genuine calculator & storage state */
+function executeToolInBrowser(toolName, args, studentProfile, roster) {
+  const syllabusData = window.SyllabusData;
+  const calculator = window.AppCalculator;
+  const storage = window.AppStorage;
+
+  const courses = calculator.resolveCourses(studentProfile, syllabusData);
+  const summary = calculator.calculateStudentSummary(studentProfile, courses, syllabusData);
+
+  if (toolName === "get_marks_summary") {
+    return {
+      studentName: studentProfile.name || "Unknown",
+      rollNo: studentProfile.rollNo || "Unknown",
+      totalMarksEntered: summary.totalMarksEntered,
+      maxMarksOfEnteredComponents: summary.maxMarksOfEnteredComponents,
+      enteredPercentage: summary.enteredPercentage + "%",
+      semesterStandingPercentage: summary.projectedSemesterPercentage + "%",
+      semesterStandingMarks: `${summary.totalMarksEntered} / 650`,
+      completedComponentsCount: summary.completedComponentsCount,
+      pendingComponentsCount: summary.pendingComponentsCount,
+      totalApplicableComponents: summary.totalApplicableComponentsCount,
+      theoryMarksEntered: `${summary.theoryMarksEntered} / ${summary.theoryMaxOfEntered}`,
+      labMarksEntered: `${summary.labMarksEntered} / ${summary.labMaxOfEntered}`
+    };
+  }
+
+  if (toolName === "get_pending_assessments") {
+    const pendingList = [];
+    summary.courseBreakdown.forEach(c => {
+      Object.keys(c.components).forEach(comp => {
+        if (c.components[comp].status === "pending") {
+          pendingList.push({
+            courseName: c.name,
+            courseCode: c.code,
+            category: c.category,
+            assessmentComponent: comp.toUpperCase(),
+            maxMarks: c.components[comp].max
+          });
+        }
+      });
+    });
+
+    return {
+      totalPendingCount: pendingList.length,
+      pendingAssessments: pendingList
+    };
+  }
+
+  if (toolName === "get_class_roster_summary") {
+    const classRoster = (Array.isArray(roster) && roster.length > 0) ? roster : storage.loadFacultyRoster();
+    return calculator.calculateClassSummary(classRoster, syllabusData);
+  }
+
+  if (toolName === "get_student_detail") {
+    const classRoster = (Array.isArray(roster) && roster.length > 0) ? roster : storage.loadFacultyRoster();
+    const queryRoll = (args && args.rollNo ? String(args.rollNo).trim().toUpperCase() : "");
+    const student = classRoster.find(s => s.rollNo.toUpperCase() === queryRoll) 
+      || (studentProfile && studentProfile.rollNo ? studentProfile : classRoster[0]);
+
+    const sCourses = calculator.resolveCourses(student, syllabusData);
+    const sSummary = calculator.calculateStudentSummary(student, sCourses, syllabusData);
+
+    const pendingComps = [];
+    sSummary.courseBreakdown.forEach(c => {
+      Object.keys(c.components).forEach(k => {
+        if (c.components[k].status === "pending") {
+          pendingComps.push(`${c.name} (${k.toUpperCase()}: Max ${c.components[k].max})`);
+        }
+      });
+    });
+
+    return {
+      rollNo: student.rollNo,
+      name: student.name,
+      totalMarksEntered: sSummary.totalMarksEntered,
+      maxMarksOfEntered: sSummary.maxMarksOfEnteredComponents,
+      enteredPercentage: sSummary.enteredPercentage + "%",
+      semesterStanding: `${sSummary.totalMarksEntered} / 650 (${sSummary.projectedSemesterPercentage}%)`,
+      pendingCount: sSummary.pendingComponentsCount,
+      completedCount: sSummary.completedComponentsCount,
+      pendingComponentsList: pendingComps
+    };
+  }
+
+  throw new Error(`Unknown tool: ${toolName}`);
+}
+
+/* Call Gemini API directly from browser with function calling loop */
+async function callGeminiClient(apiKey, userMessage, profile, history = [], roster = []) {
+  const model = "gemini-2.5-flash";
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
+
+  const contents = [];
+  if (Array.isArray(history)) {
+    history.forEach(item => {
+      if (item.role && item.text) {
+        contents.push({
+          role: item.role === "user" ? "user" : "model",
+          parts: [{ text: item.text }]
+        });
+      }
+    });
+  }
+
+  contents.push({
+    role: "user",
+    parts: [{ text: userMessage }]
+  });
+
+  const toolsExecuted = [];
+
+  // Step 1: Initial call with function declarations
+  let response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
+      contents: contents,
+      tools: GEMINI_TOOLS
+    })
+  });
+
+  if (!response.ok) {
+    let errMsg = `Gemini API Error (${response.status})`;
+    try {
+      const errJson = await response.json();
+      if (errJson.error && errJson.error.message) errMsg = errJson.error.message;
+    } catch {}
+    throw new Error(errMsg);
+  }
+
+  let data = await response.json();
+  let candidate = data.candidates && data.candidates[0];
+  let content = candidate && candidate.content;
+
+  // Step 2: Handle tool calls
+  const functionCalls = content && content.parts && content.parts.filter(p => p.functionCall);
+
+  if (functionCalls && functionCalls.length > 0) {
+    contents.push(content);
+
+    const responseParts = [];
+    for (const part of functionCalls) {
+      const call = part.functionCall;
+      try {
+        const result = executeToolInBrowser(call.name, call.args || {}, profile, roster);
+        toolsExecuted.push({
+          name: call.name,
+          args: call.args || {},
+          result: result
+        });
+        responseParts.push({
+          functionResponse: {
+            name: call.name,
+            response: { result: result }
+          }
+        });
+      } catch (err) {
+        responseParts.push({
+          functionResponse: {
+            name: call.name,
+            response: { error: err.message }
+          }
+        });
       }
     }
-  } catch {
-    if (pill) { pill.className = 'status-pill status-offline'; pill.innerHTML = '<div class="status-pill-dot"></div> Server Offline'; }
+
+    contents.push({
+      role: "user",
+      parts: responseParts
+    });
+
+    // Step 3: Tool-turn final generation
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
+        contents: contents
+      })
+    });
+
+    if (!response.ok) {
+      let errMsg = `Gemini Tool Error (${response.status})`;
+      try {
+        const errJson = await response.json();
+        if (errJson.error && errJson.error.message) errMsg = errJson.error.message;
+      } catch {}
+      throw new Error(errMsg);
+    }
+
+    data = await response.json();
+    candidate = data.candidates && data.candidates[0];
+    content = candidate && candidate.content;
   }
+
+  let replyText = "I could not generate a response. Please try again.";
+  if (content && content.parts) {
+    const textParts = content.parts.filter(p => p.text).map(p => p.text);
+    if (textParts.length > 0) {
+      replyText = textParts.join("\n\n");
+    }
+  }
+
+  return {
+    reply: replyText,
+    toolsExecuted: toolsExecuted
+  };
 }
 
 async function sendChat() {
@@ -1538,6 +1947,14 @@ async function sendChat() {
   const msg = inputEl?.value.trim();
   if (!msg) return;
 
+  const cfg = getAIConfig();
+  if (_aiActiveMode === 'none' && !cfg.apiKey && !cfg.backendUrl) {
+    appendUserMessage(msg);
+    appendAIMessage('⚠️ **Setup Required:** To chat with the AI Advisor on GitHub Pages, please configure your Gemini API Key.', true, null, true);
+    openAiSettingsModal();
+    return;
+  }
+
   inputEl.value = '';
   inputEl.disabled = true;
   if (sendBtn) sendBtn.disabled = true;
@@ -1545,27 +1962,39 @@ async function sendChat() {
   appendUserMessage(msg);
   const typingId = appendTypingIndicator();
 
+  const student = AppStorage.loadStudentProfile();
+  const roster = AppStorage.loadFacultyRoster();
+
   try {
-    const student = AppStorage.loadStudentProfile();
-    const roster = AppStorage.loadFacultyRoster();
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, student, roster })
-    });
+    if (_aiActiveMode === 'backend') {
+      const targetBackend = cfg.backendUrl || '';
+      const res = await fetch(`${targetBackend}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, student, roster, history: _aiChatHistory })
+      });
 
-    removeTypingIndicator(typingId);
+      removeTypingIndicator(typingId);
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-      appendAIMessage(`⚠️ ${err.error || 'Server error.'}`, false, null, true);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        appendAIMessage(`⚠️ ${err.error || 'Backend communication error.'}`, false, null, true);
+      } else {
+        const data = await res.json();
+        _aiChatHistory.push({ role: 'user', text: msg });
+        _aiChatHistory.push({ role: 'model', text: data.reply });
+        appendAIMessage(data.reply || 'No response.', true, data.toolsExecuted || data.toolCalls);
+      }
     } else {
-      const data = await res.json();
-      appendAIMessage(data.reply || 'No response.', false, data.toolCalls);
+      const result = await callGeminiClient(cfg.apiKey, msg, student, _aiChatHistory, roster);
+      removeTypingIndicator(typingId);
+      _aiChatHistory.push({ role: 'user', text: msg });
+      _aiChatHistory.push({ role: 'model', text: result.reply });
+      appendAIMessage(result.reply, true, result.toolsExecuted);
     }
   } catch (e) {
     removeTypingIndicator(typingId);
-    appendAIMessage('⚠️ Could not reach the server. Is `node server.js` running?', false, null, true);
+    appendAIMessage(`⚠️ **Error:** ${escapeHtml(e.message)}<br><small>Check your API key in AI Settings or verify network connectivity.</small>`, true, null, true);
   } finally {
     if (inputEl) inputEl.disabled = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -1608,7 +2037,34 @@ function removeTypingIndicator(id) {
   document.getElementById(id)?.remove();
 }
 
-function appendAIMessage(text, isHtml = false, toolCalls = null, isError = false) {
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = escapeHtml(text);
+
+  // Headers (###, ##, #)
+  html = html.replace(/^### (.*$)/gim, '<h4 style="margin:8px 0 4px 0;font-size:13px;font-weight:700;color:var(--ink);">$1</h4>');
+  html = html.replace(/^## (.*$)/gim, '<h3 style="margin:10px 0 6px 0;font-size:14px;font-weight:700;color:var(--ink);">$1</h3>');
+  html = html.replace(/^# (.*$)/gim, '<h2 style="margin:12px 0 8px 0;font-size:15px;font-weight:800;color:var(--ink);">$1</h2>');
+
+  // Bold (**bold**)
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic (*italic*)
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Inline code (`code`)
+  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--cream-dark);padding:2px 5px;border-radius:4px;font-size:11px;border:1px solid var(--border);">$1</code>');
+
+  // Bullet points (- or * )
+  html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<li style="margin-left:16px;list-style-type:disc;margin-bottom:2px;">$1</li>');
+
+  // Line breaks
+  html = html.replace(/\n/g, '<br>');
+  // Remove break immediately after </li>
+  html = html.replace(/(<\/li>)<br>/g, '$1');
+
+  return html;
+}
+
+function appendAIMessage(text, isMarkdown = false, toolCalls = null, isError = false) {
   const chatBody = document.getElementById('chatBody');
   if (!chatBody) return;
   const div = document.createElement('div');
@@ -1617,21 +2073,21 @@ function appendAIMessage(text, isHtml = false, toolCalls = null, isError = false
   let toolHtml = '';
   if (toolCalls && toolCalls.length > 0) {
     toolHtml = toolCalls.map((tc, i) => `
-      <div class="tool-chip" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="margin-top:6px;">
+      <div class="tool-chip" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="margin-top:6px;cursor:pointer;" title="Click to view raw tool output">
         <div class="tool-chip-dot"></div>
         ${tc.name || 'tool'} · executed
         <span style="margin-left:auto;font-size:9px;opacity:.6;">▼</span>
       </div>
-      <pre class="tool-result">${escapeHtml(JSON.stringify(tc.result || {}, null, 2))}</pre>
+      <pre class="tool-result" style="display:none;background:var(--cream-dark);padding:8px;border-radius:var(--r-sm);font-size:10px;overflow-x:auto;margin:4px 0;">${escapeHtml(JSON.stringify(tc.result || {}, null, 2))}</pre>
     `).join('');
   }
 
-  const content = isHtml ? text : escapeHtml(text).replace(/\n/g, '<br>');
+  const content = isMarkdown ? renderMarkdown(text) : escapeHtml(text).replace(/\n/g, '<br>');
   const errorStyle = isError ? 'border-left:3px solid var(--coral-text);' : '';
 
   div.innerHTML = `
     <div class="msg-avatar" style="background:var(--yellow);color:var(--ink);font-size:10px;font-weight:800;">AI</div>
-    <div>
+    <div style="flex:1;max-width:580px;">
       ${toolHtml}
       <div class="msg-bubble assistant" style="${errorStyle}">${content}</div>
       <div style="font-size:10px;color:var(--ink-muted);margin-top:4px;padding-left:4px;">SNJB Advisor · Just now</div>

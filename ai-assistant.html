@@ -83,9 +83,14 @@
         <h1 class="page-greeting" style="font-size:var(--text-2xl);">AI Academic Advisor.</h1>
         <p class="page-subgreeting">Ask anything about marks, pending assessments, or class performance. Powered by Gemini 2.5 Flash with real tool access.</p>
       </div>
-      <div class="status-pill" id="ai-status-pill" style="flex-shrink:0;">
-        <div class="status-pill-dot" style="background:var(--ink-muted);"></div>
-        Checking…
+      <div style="display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;">
+        <div class="status-pill" id="ai-status-pill" style="cursor:pointer;" title="Click to view or configure AI connection settings">
+          <div class="status-pill-dot" style="background:var(--ink-muted);"></div>
+          Checking…
+        </div>
+        <button class="btn btn-secondary btn-sm" id="openAiSettingsBtn" style="height:32px;padding:0 10px;font-size:12px;gap:4px;" title="AI Settings">
+          <span>⚙️</span> Settings
+        </button>
       </div>
     </div>
 
@@ -208,6 +213,55 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- AI Settings Modal for GitHub Pages & Custom Backend -->
+<div class="modal-overlay" id="aiSettingsModal">
+  <div class="modal" style="max-width:540px;width:100%;">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ AI Advisor Configuration</div>
+      <button class="modal-close" onclick="closeModal('aiSettingsModal')" aria-label="Close modal">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:var(--sp-4);">
+      <p style="font-size:var(--text-sm);color:var(--ink-muted);line-height:1.5;margin:0;">
+        GitHub Pages is a static host without a Node.js server. You can run the AI Advisor <strong>directly in your browser</strong> with your Gemini API key, or connect to a custom backend.
+      </p>
+
+      <div style="background:var(--cream-dark);border:1.5px solid var(--border-med);border-radius:var(--r-md);padding:var(--sp-4);">
+        <label for="cfgGeminiKey" style="display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);font-weight:700;color:var(--ink);margin-bottom:var(--sp-2);">
+          <span>OPTION 1: Gemini API Key (Direct Browser Mode)</span>
+          <span class="chip chip-mint" style="font-size:10px;">Recommended for GitHub Pages</span>
+        </label>
+        <div style="display:flex;gap:var(--sp-2);">
+          <input type="password" id="cfgGeminiKey" class="chat-input" style="height:38px;font-family:monospace;font-size:var(--text-xs);flex:1;" placeholder="Paste your Google Gemini API key">
+          <button type="button" class="btn btn-secondary btn-sm" id="toggleKeyVisibilityBtn" style="flex-shrink:0;" title="Show/Hide Key">👁️</button>
+        </div>
+        <small style="display:block;font-size:11px;color:var(--ink-muted);margin-top:6px;line-height:1.4;">
+          Stored safely in your browser (<code>localStorage</code>). Never sent to any third party.<br>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:underline;font-weight:600;">Get a free Gemini API Key from Google AI Studio →</a>
+        </small>
+      </div>
+
+      <div style="background:var(--cream-dark);border:1.5px solid var(--border-med);border-radius:var(--r-md);padding:var(--sp-4);">
+        <label for="cfgBackendUrl" style="display:block;font-size:var(--text-xs);font-weight:700;color:var(--ink);margin-bottom:var(--sp-2);">
+          OPTION 2: Custom Backend / Vercel URL (Optional)
+        </label>
+        <input type="url" id="cfgBackendUrl" class="chat-input" style="height:38px;font-size:var(--text-xs);" placeholder="e.g. https://your-app.vercel.app">
+        <small style="display:block;font-size:11px;color:var(--ink-muted);margin-top:6px;">
+          If you deployed this repo to Vercel, Render, or Railway, enter your deployed base URL here.
+        </small>
+      </div>
+
+      <div id="aiConfigTestResult" style="display:none;padding:10px 14px;border-radius:var(--r-sm);font-size:var(--text-xs);line-height:1.4;"></div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;">
+      <button type="button" class="btn btn-secondary btn-sm" id="clearAiSettingsBtn" style="color:var(--coral-text);">Clear Stored Settings</button>
+      <div style="display:flex;gap:var(--sp-2);">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('aiSettingsModal')">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="saveAiSettingsBtn">Save & Connect</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Toast -->
